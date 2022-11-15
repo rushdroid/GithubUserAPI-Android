@@ -1,18 +1,28 @@
 package com.example.rushabhtawkto.ui.userdetail
 
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.rushabhtawkto.R
+import androidx.fragment.app.Fragment
 import com.example.rushabhtawkto.databinding.FragmentUserDetailBinding
+import com.example.tawktopractice.data.model.Userdetail
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class UserDetailFragment : Fragment() {
 
     private lateinit var binding: FragmentUserDetailBinding
     private lateinit var viewModel: UserDetailViewModel
+    private lateinit var loginName: String
+    private lateinit var userdetail: Userdetail
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            loginName = it.getString("loginName").toString()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
