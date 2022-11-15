@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">RushabhTawkTo</string>
+    <string name="text_save">Save</string>
+    <string name="text_followers">Followers: %s</string>
+    <string name="text_following">Following: %s"</string>
+    <string name="text_name">Name: %s</string>
+    <string name="text_company">Company: %s</string>
+    <string name="text_blog">Blog: %s</string>
+    <string name="text_note">Note</string>
+    <string name="no_internet_connection">No internet connection, Please make sure you have stable internet connection</string>
+    <string name="text_loading">Loading</string>
+    <string name="text_search">Search</string>
+    <string name="text_search_here">Search here</string>
+</resources>
