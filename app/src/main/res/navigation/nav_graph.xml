@@ -13,9 +13,6 @@
         <action
             android:id="@+id/action_userListFragment_to_userDetailFragment"
             app:destination="@id/userDetailFragment" />
-        <action
-            android:id="@+id/action_userListFragment_to_searchUserFragment"
-            app:destination="@id/searchUserFragment" />
     </fragment>
     <fragment
         android:id="@+id/userDetailFragment"
@@ -31,14 +28,5 @@
             android:defaultValue='""'
             app:argType="string"
             app:nullable="true" />
-    </fragment>
-    <fragment
-        android:id="@+id/searchUserFragment"
-        android:name="com.example.rushabhtawkto.ui.searchuser.SearchUserFragment"
-        android:label="fragment_search_user"
-        tools:layout="@layout/fragment_search_user" >
-        <action
-            android:id="@+id/action_searchUserFragment_to_userDetailFragment"
-            app:destination="@id/userDetailFragment" />
     </fragment>
 </navigation>
