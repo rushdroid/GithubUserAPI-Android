@@ -27,7 +27,6 @@ class UserListViewModel @Inject constructor(
         return newResult
     }
 
-
     @ExperimentalPagingApi
     fun getUsers(
         query: String
