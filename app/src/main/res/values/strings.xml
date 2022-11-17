@@ -12,4 +12,5 @@
     <string name="text_search">Search</string>
     <string name="text_search_here">Search here</string>
     <string name="retry">Retry</string>
+    <string name="text_user_list">User List</string>
 </resources>

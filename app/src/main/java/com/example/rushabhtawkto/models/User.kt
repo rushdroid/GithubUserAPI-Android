@@ -40,5 +40,6 @@ data class User(
     @SerializedName("site_admin")
     val siteAdmin: Boolean?,
     val score: Double?,
+    var note: String? = "",
     var isNoteAvailable: Boolean? = false
 )

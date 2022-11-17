@@ -27,6 +27,19 @@ class UserListViewModel @Inject constructor(
         return newResult
     }
 
+
+    @ExperimentalPagingApi
+    fun getUsers(
+        query: String
+    ): Flow<PagingData<User>> {
+        val newResult: Flow<PagingData<User>> =
+            repository.getUsers(
+                query = query
+            ).cachedIn(viewModelScope)
+        currentResult = newResult
+        return newResult
+    }
+
     /**
      * Same thing but with Livedata
      */

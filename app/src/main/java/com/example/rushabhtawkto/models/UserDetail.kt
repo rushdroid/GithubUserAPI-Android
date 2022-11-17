@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
 @Entity(tableName = "user_detail_table")
-data class Userdetail(
+data class UserDetail(
     @SerializedName("avatar_url")
     val avatarUrl: String?,
     @SerializedName("bio")

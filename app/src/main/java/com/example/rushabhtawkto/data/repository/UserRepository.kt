@@ -37,6 +37,7 @@ class UserRepository @Inject constructor(
         ).flow //can also return livedata
     }
 
+
     /**
      * The same thing but with Livedata
      */
@@ -48,7 +49,35 @@ class UserRepository @Inject constructor(
                 UserDataSource(userApi)
             }
         ).liveData
+    }
 
+    /**
+     * for caching
+     */
+    @ExperimentalPagingApi
+    fun getUsers(query: String): Flow<PagingData<User>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = NETWORK_PAGE_SIZE,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { db.getUserDao().getUsers(query = "%"+query+"%") }
+        ).flow //can also return livedata
+    }
+
+
+    /**
+     * The same thing but with Livedata
+     */
+    fun getUsersLiveData(
+        query: String
+    ): LiveData<PagingData<User>> {
+        return Pager(
+            config = PagingConfig(enablePlaceholders = false, pageSize = NETWORK_PAGE_SIZE),
+            pagingSourceFactory = {
+                UserDataSource(userApi)
+            }
+        ).liveData
     }
 
     companion object {

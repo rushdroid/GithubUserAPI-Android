@@ -2,22 +2,22 @@ package com.example.rushabhtawkto.ui.userlist
 
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.rushabhtawkto.R
 import com.example.rushabhtawkto.adapters.UserAdapter
 import com.example.rushabhtawkto.adapters.UserLoadingStateAdapter
 import com.example.rushabhtawkto.databinding.FragmentUserListBinding
 import com.example.rushabhtawkto.utils.RecyclerViewItemDecoration
 import com.example.tawktopractice.data.model.User
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
@@ -28,11 +28,20 @@ class UserListFragment : Fragment() {
 
     private lateinit var binding: FragmentUserListBinding
     private val viewModel: UserListViewModel by viewModels()
-
+    private var isSearch = false
     private val adapter =
-        UserAdapter { user: User -> Log.d("Click", ": ${user.login}") }
+        UserAdapter { user: User ->
+            val action = UserListFragmentDirections.actionUserListFragmentToUserDetailFragment(
+                id = user.id!!, loginName = user.login
+            )
+            action.let { findNavController().navigate(it) }
+        }
 
     private var searchJob: Job? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,17 +55,37 @@ class UserListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setUpAdapter()
-        startSearchJob()
+        if (binding.searchView.query.toString().trim().isBlank())
+            startSearchJob()
+        else
+            startSearchJob(query = binding.searchView.query.toString().trim())
+        initListener()
+        initToolbar()
     }
 
     @ExperimentalPagingApi
     private fun startSearchJob() {
         searchJob?.cancel()
         searchJob = lifecycleScope.launch {
-            viewModel.getUsers()
-                .collectLatest {
-                    adapter.submitData(it)
-                }
+            viewModel.getUsers().collectLatest {
+                Log.d("TAG", "startSearchJob: $it")
+                adapter.submitData(it)
+            }
+        }
+    }
+
+    @ExperimentalPagingApi
+    private fun startSearchJob(query: String) {
+        searchJob?.cancel()
+        searchJob = lifecycleScope.launch {
+            viewModel.getUsers(
+                query = query
+            ).collectLatest {
+                Log.d("TAG", "startSearchJob: $it")
+                adapter.submitData(it)
+                Log.d("TAG", "startSearchJob: $adapter.itemCount")
+
+            }
         }
     }
 
@@ -71,21 +100,16 @@ class UserListFragment : Fragment() {
         )
 
         adapter.addLoadStateListener { loadState ->
-
             if (loadState.mediator?.refresh is LoadState.Loading) {
-
                 if (adapter.snapshot().isEmpty()) {
                     showLoading()
                 }
-
             } else {
                 hideLoading()
-
                 val error = when {
                     loadState.mediator?.prepend is LoadState.Error -> loadState.mediator?.prepend as LoadState.Error
                     loadState.mediator?.append is LoadState.Error -> loadState.mediator?.append as LoadState.Error
                     loadState.mediator?.refresh is LoadState.Error -> loadState.mediator?.refresh as LoadState.Error
-
                     else -> null
                 }
                 error?.let {
@@ -93,11 +117,31 @@ class UserListFragment : Fragment() {
                         showLoading()
                     }
                 }
-
             }
         }
     }
 
+    private fun initToolbar() {
+        requireActivity().title = getString(R.string.text_user_list)
+    }
+
+    @OptIn(ExperimentalPagingApi::class)
+    private fun initListener() {
+        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                startSearchJob(query = binding.searchView.query.toString().trim())
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                isSearch = newText.isNotBlank()
+                if (newText.isBlank()) {
+                    startSearchJob()
+                }
+                return false
+            }
+        });
+    }
 
     private fun showNoInternetView() {
         binding.recyclerView.isVisible = false

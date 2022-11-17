@@ -45,7 +45,7 @@ class UserAdapter(
                 }
                 val context = it.root.context
                 it.tvUsername.text = user?.login ?: ""
-                it.tvDetail.text = user?.type ?: ""
+                it.tvDetail.text = (user?.type.orEmpty() ?: "") + "-" + (user?.id.toString() ?: "")
                 Glide.with(context).load(user?.avatarUrl).placeholder(R.drawable.img_user_profile)
                     .into(it.imgProfile)
 

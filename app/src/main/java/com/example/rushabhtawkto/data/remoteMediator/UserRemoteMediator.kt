@@ -13,7 +13,6 @@ import com.example.tawktopractice.data.model.User
 import retrofit2.HttpException
 import java.io.IOException
 
-
 @ExperimentalPagingApi
 class UserRemoteMediator(
     private val service: UserApi,
@@ -22,7 +21,9 @@ class UserRemoteMediator(
     override suspend fun load(loadType: LoadType, state: PagingState<Int, User>): MediatorResult {
         val key = when (loadType) {
             LoadType.REFRESH -> {
-                if (db.getUserDao().count() > 0) return MediatorResult.Success(false)
+                if (db.getUserDao().count() > 0) return MediatorResult.Success(
+                    endOfPaginationReached = false
+                )
                 null
             }
             LoadType.PREPEND -> {
@@ -41,10 +42,10 @@ class UserRemoteMediator(
             val page: Int = key?.nextKey ?: STARTING_PAGE_INDEX
             val apiResponse = service.getUsers(page)
 
-            val playersList = apiResponse
+            val userList = apiResponse
 
             db.withTransaction {
-                val nextKey = playersList.last().id
+                val nextKey = userList.last().id
 
                 db.remoteKeysDao.insertKey(
                     RemoteKeys(
@@ -53,7 +54,7 @@ class UserRemoteMediator(
                         isEndReached = false
                     )
                 )
-                db.getUserDao().insertMultiplePlayers(playersList)
+                db.getUserDao().insertMultipleUsers(userList)
             }
             return MediatorResult.Success(false)
         } catch (exception: IOException) {

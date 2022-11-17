@@ -8,13 +8,13 @@ import com.example.rushabhtawkto.di.ApplicationScope
 import com.example.tawktopractice.data.local.UserDao
 import com.example.tawktopractice.data.local.UserDetailDao
 import com.example.tawktopractice.data.model.User
-import com.example.tawktopractice.data.model.Userdetail
+import com.example.tawktopractice.data.model.UserDetail
 import kotlinx.coroutines.CoroutineScope
 import javax.inject.Inject
 import javax.inject.Provider
 
 @Database(
-    entities = [User::class, Userdetail::class, RemoteKeys::class],
+    entities = [User::class, UserDetail::class, RemoteKeys::class],
     version = 1,
     exportSchema = false
 )
