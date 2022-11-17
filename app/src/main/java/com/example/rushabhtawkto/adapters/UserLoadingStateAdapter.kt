@@ -7,7 +7,9 @@ import androidx.paging.LoadState
 import androidx.paging.LoadStateAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rushabhtawkto.databinding.NetworkStateItemBinding
-
+/*
+* Loading state for paging adapter
+* */
 class UserLoadingStateAdapter(private val retry: () -> Unit) :
     LoadStateAdapter<UserLoadingStateAdapter.LoadStateViewHolder>() {
 

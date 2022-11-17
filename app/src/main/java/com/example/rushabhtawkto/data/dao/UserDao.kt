@@ -36,25 +36,4 @@ interface UserDao {
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     suspend fun update(user: User)
-
-    /*  @Query("SELECT * FROM user_table")
-      fun getAllUsers(): LiveData<List<User>>
-
-      @Query("SELECT * FROM user_table")
-      suspend fun getAllUserList(): List<User>
-
-      @Query("SELECT * FROM user_table where login LIKE :query")
-      suspend fun searchUserWithLogin(query: String): List<User>
-
-      @Insert(onConflict = OnConflictStrategy.REPLACE)
-      suspend fun insert(user: User): Long
-
-      @Insert(onConflict = OnConflictStrategy.REPLACE)
-      suspend fun insertAll(users: List<User>)
-
-      @Delete
-      suspend fun delete(user: User)
-
-      @Query("DELETE FROM user_table")
-      suspend fun deleteAllUsers()*/
 }

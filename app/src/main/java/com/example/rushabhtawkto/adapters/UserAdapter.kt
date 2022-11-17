@@ -12,7 +12,9 @@ import com.bumptech.glide.Glide
 import com.example.rushabhtawkto.R
 import com.example.rushabhtawkto.databinding.ItemUserListBinding
 import com.example.tawktopractice.data.model.User
-
+/*
+* Adapter for recyclerview
+* */
 class UserAdapter(
     private val onItemClickListener: (User) -> Unit = { _ -> }
 ) : PagingDataAdapter<User, UserAdapter.UserViewHolder>(
