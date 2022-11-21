@@ -164,15 +164,11 @@ class UserListFragment : Fragment() {
     private fun showLoading() {
         binding.linearShimmerview.isVisible = true
         binding.recyclerView.isVisible = false
-        binding.layoutNoInternet.ivErrorIcon.isVisible = false
-        binding.layoutNoInternet.tvError.isVisible = false
     }
 
     private fun hideLoading() {
         binding.linearShimmerview.isVisible = false
         binding.recyclerView.isVisible = true
-        binding.layoutNoInternet.ivErrorIcon.isVisible = false
-        binding.layoutNoInternet.tvError.isVisible = false
     }
 
     private fun retry() {
