@@ -1,17 +1,20 @@
 package com.example.rushabhtawkto.ui.userdetail
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.view.isVisible
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.bumptech.glide.Glide
 import com.example.rushabhtawkto.R
-import com.example.rushabhtawkto.databinding.FragmentUserDetailBinding
+import com.example.rushabhtawkto.ui.compose.UserDetailScreen
 import com.example.rushabhtawkto.utils.Resource
 import com.example.tawktopractice.data.model.UserDetail
 import com.github.pwittchen.reactivenetwork.library.rx2.ReactiveNetwork
@@ -22,10 +25,17 @@ import io.reactivex.schedulers.Schedulers
 @AndroidEntryPoint
 class UserDetailFragment : Fragment() {
 
-    private lateinit var binding: FragmentUserDetailBinding
     private val viewModel: UserDetailViewModel by viewModels()
     private lateinit var loginName: String
     private lateinit var userdetail: UserDetail
+
+    private var followersCountState = mutableStateOf("")
+    private var followingCountState = mutableStateOf("")
+    private var nameState = mutableStateOf("")
+    private var companyState = mutableStateOf("")
+    private var blogState = mutableStateOf("")
+    private var noteState = mutableStateOf("")
+    private var profileImageState = mutableStateOf("")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,38 +47,49 @@ class UserDetailFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        binding = FragmentUserDetailBinding.inflate(layoutInflater)
-        return binding.root
+        return ComposeView(requireContext()).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                UserDetailScreen(
+                    followersCount = followersCountState.value,
+                    followingCount = followingCountState.value,
+                    name = nameState.value,
+                    company = companyState.value,
+                    blog = blogState.value,
+                    note = noteState.value,
+                    profileImage = profileImageState.value,
+                    onNoteChanged = {
+                        noteState.value = it
+                    },
+                    onSaveClicked = {
+                        userdetail.note = noteState.value.trim()
+                        viewModel.saveUserNote(userdetail = userdetail)
+                    }
+                )
+            }
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         getUserDetails()
-        initListener()
     }
-
 
     private fun getUserDetails() {
         viewModel.userDetail.observe(viewLifecycleOwner) {
             when (it) {
                 is Resource.Error -> {
-                    hideLoadingView()
                     if (!this::userdetail.isInitialized) {
-                        showNoInternetView()
-                    } else {
-                        hideNoInternetView()
+                        internetObserver()
                     }
                 }
                 is Resource.Loading -> {
                     Log.d("TAG", "getUserDetail: Loading")
-                    showLoadingView()
                 }
                 is Resource.Success -> {
-                    hideLoadingView()
                     it.data?.let { it1 ->
                         userdetail = it1
                         initDetailView()
-                        hideNoInternetView()
                     }
                 }
             }
@@ -80,61 +101,22 @@ class UserDetailFragment : Fragment() {
     }
 
     private fun initDetailView() {
-        binding.tvFollowers.text =
-            getString(R.string.text_followers, userdetail.followers.toString())
-        binding.tvFollowing.text =
-            getString(R.string.text_following, userdetail.following.toString())
-        binding.tvName.text = getString(R.string.text_name, userdetail.name)
-        binding.tvCompany.text = getString(R.string.text_company, userdetail.company)
-        binding.tvBlog.text = getString(R.string.text_blog, userdetail.blog)
-        userdetail.note.let {
-            binding.etNote.setText(it)
+        Handler(Looper.getMainLooper()).post {
+            followersCountState.value =
+                getString(R.string.text_followers, userdetail.followers.toString())
+            followingCountState.value =
+                getString(R.string.text_following, userdetail.following.toString())
+            nameState.value = getString(R.string.text_name, userdetail.name)
+            companyState.value = getString(R.string.text_company, userdetail.company)
+            blogState.value = getString(R.string.text_blog, userdetail.blog)
+            userdetail.note.let { noteState.value = it ?: "" }
+            profileImageState.value = userdetail.avatarUrl ?: ""
         }
-        Glide.with(requireContext()).load(userdetail.avatarUrl).into(binding.ivProfile)
         initToolbar()
-    }
-
-    private fun initListener() {
-        binding.materialButton.setOnClickListener {
-            if (binding.etNote.text.isNotEmpty()) {
-                userdetail.note = binding.etNote.text.toString().trim()
-                viewModel.saveUserNote(userdetail = userdetail)
-            } else {
-                userdetail.note = ""
-                viewModel.saveUserNote(userdetail = userdetail)
-            }
-        }
-        internetObserver()
     }
 
     private fun initToolbar() {
         requireActivity().title = userdetail.name
-    }
-
-    private fun showNoInternetView() {
-        binding.layoutParent.isVisible = false
-        binding.layoutNoInternet.ivErrorIcon.isVisible = true
-        binding.layoutNoInternet.tvError.isVisible = true
-    }
-
-    private fun hideNoInternetView() {
-        binding.layoutParent.isVisible = true
-        binding.layoutNoInternet.ivErrorIcon.isVisible = false
-        binding.layoutNoInternet.tvError.isVisible = false
-    }
-
-    private fun showLoadingView() {
-        binding.layoutShimmerview.isVisible = true
-        binding.layoutParent.isVisible = false
-        binding.layoutNoInternet.ivErrorIcon.isVisible = false
-        binding.layoutNoInternet.tvError.isVisible = false
-    }
-
-    private fun hideLoadingView() {
-        binding.layoutShimmerview.isVisible = false
-        binding.layoutParent.isVisible = true
-        binding.layoutNoInternet.ivErrorIcon.isVisible = false
-        binding.layoutNoInternet.tvError.isVisible = false
     }
 
     private fun internetObserver() {
@@ -144,16 +126,17 @@ class UserDetailFragment : Fragment() {
                     when {
                         connectivity.available() -> {
                             if (!this::userdetail.isInitialized) {
-//                                getUserDetails()
+
                             }
                         }
                         else -> {
                             val login = (this::userdetail.isInitialized)
                             if (!login) {
-                                showNoInternetView()
+
                             }
                         }
                     }
                 }
     }
 }
+

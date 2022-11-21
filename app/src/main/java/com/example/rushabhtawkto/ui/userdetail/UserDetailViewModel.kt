@@ -11,6 +11,7 @@ import com.example.rushabhtawkto.utils.Resource
 import com.example.tawktopractice.data.model.UserDetail
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.Response
 import java.io.IOException
@@ -26,6 +27,7 @@ class UserDetailViewModel @Inject constructor(
     val noteData: MutableLiveData<String> = MutableLiveData()
 
     fun getUserDetail(login: String) = viewModelScope.launch {
+        delay(3000)
         getUserDetailFromLogin(login = login)
     }
 
