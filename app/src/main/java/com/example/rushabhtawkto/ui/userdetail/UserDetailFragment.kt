@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.example.rushabhtawkto.R
 import com.example.rushabhtawkto.ui.compose.UserDetailScreen
 import com.example.rushabhtawkto.utils.Resource
@@ -36,6 +37,7 @@ class UserDetailFragment : Fragment() {
     private var blogState = mutableStateOf("")
     private var noteState = mutableStateOf("")
     private var profileImageState = mutableStateOf("")
+    private var isInternetAvailable = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,15 +75,18 @@ class UserDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         getUserDetails()
+        internetObserver()
     }
 
     private fun getUserDetails() {
         viewModel.userDetail.observe(viewLifecycleOwner) {
             when (it) {
                 is Resource.Error -> {
-                    if (!this::userdetail.isInitialized) {
-                        internetObserver()
-                    }
+                    val action =
+                        UserDetailFragmentDirections.actionUserDetailFragmentToNoInternetFragment(
+                            isInternet = isInternetAvailable
+                        )
+                    action.let { findNavController().navigate(it) }
                 }
                 is Resource.Loading -> {
                     Log.d("TAG", "getUserDetail: Loading")
@@ -97,7 +102,6 @@ class UserDetailFragment : Fragment() {
         viewModel.noteData.observe(viewLifecycleOwner) {
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
         }
-        viewModel.getUserDetail(login = loginName)
     }
 
     private fun initDetailView() {
@@ -125,15 +129,12 @@ class UserDetailFragment : Fragment() {
                 .observeOn(AndroidSchedulers.mainThread()).subscribe { connectivity ->
                     when {
                         connectivity.available() -> {
-                            if (!this::userdetail.isInitialized) {
-
-                            }
+                            isInternetAvailable = true
+                            viewModel.getUserDetail(login = loginName)
                         }
                         else -> {
-                            val login = (this::userdetail.isInitialized)
-                            if (!login) {
-
-                            }
+                            isInternetAvailable = false
+                            viewModel.getUserDetail(login = loginName)
                         }
                     }
                 }

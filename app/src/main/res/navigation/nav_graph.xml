@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_userListFragment_to_userDetailFragment"
             app:destination="@id/userDetailFragment" />
+        <action
+            android:id="@+id/action_userListFragment_to_noInternetFragment2"
+            app:destination="@id/noInternetFragment" />
     </fragment>
     <fragment
         android:id="@+id/userDetailFragment"
@@ -28,5 +31,18 @@
             android:defaultValue='""'
             app:argType="string"
             app:nullable="true" />
+        <action
+            android:id="@+id/action_userDetailFragment_to_noInternetFragment"
+            app:destination="@id/noInternetFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/noInternetFragment"
+        android:name="com.example.rushabhtawkto.ui.nointernet.NoInternetFragment"
+        android:label="fragment_no_internet"
+        tools:layout="@layout/fragment_no_internet" >
+        <argument
+            android:name="isInternet"
+            app:argType="boolean"
+            android:defaultValue="false" />
     </fragment>
 </navigation>

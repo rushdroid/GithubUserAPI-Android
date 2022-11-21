@@ -8,6 +8,7 @@
     <string name="text_blog">Blog: %s</string>
     <string name="text_note">Note</string>
     <string name="no_internet_connection">No internet connection, Please make sure you have stable internet connection</string>
+    <string name="something_went_wrong">Something went wrong! Please try again</string>
     <string name="text_loading">Loading</string>
     <string name="text_search">Search</string>
     <string name="text_search_here">Search here</string>
@@ -16,4 +17,5 @@
     <string name="title_activity_user_list_compose">UserListCompose</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="tap_to_retry">Tap to retry</string>
 </resources>

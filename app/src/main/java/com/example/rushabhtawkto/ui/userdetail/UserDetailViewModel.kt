@@ -88,7 +88,11 @@ class UserDetailViewModel @Inject constructor(
                 userDetail.postValue(result)
             } else {
                 val localUserDetail = userDetailRepository.getUserDetailFromLogin(loginName = login)
-                localUserDetail.let { userDetail.postValue(Resource.Success(it)) }
+                if (localUserDetail == null) {
+                    userDetail.postValue(Resource.Error("Network Failure"))
+                } else {
+                    localUserDetail.let { userDetail.postValue(Resource.Success(it)) }
+                }
             }
         } catch (ex: Exception) {
             when (ex) {

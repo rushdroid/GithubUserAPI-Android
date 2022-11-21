@@ -1,7 +1,6 @@
 package com.example.rushabhtawkto.ui.userlist
 
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
@@ -18,7 +17,10 @@ import com.example.rushabhtawkto.adapters.UserLoadingStateAdapter
 import com.example.rushabhtawkto.databinding.FragmentUserListBinding
 import com.example.rushabhtawkto.utils.RecyclerViewItemDecoration
 import com.example.tawktopractice.data.model.User
+import com.github.pwittchen.reactivenetwork.library.rx2.ReactiveNetwork
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -39,62 +41,8 @@ class UserListFragment : Fragment() {
 
     private var searchJob: Job? = null
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        binding = FragmentUserListBinding.inflate(layoutInflater)
-        return binding.root
-    }
-
-    @OptIn(ExperimentalPagingApi::class)
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        setUpAdapter()
-        if (binding.searchView.query.toString().trim().isBlank())
-            startSearchJob()
-        else
-            startSearchJob(query = binding.searchView.query.toString().trim())
-        initListener()
-        initToolbar()
-    }
-
-    @ExperimentalPagingApi
-    private fun startSearchJob() {
-        searchJob?.cancel()
-        searchJob = lifecycleScope.launch {
-            viewModel.getUsers().collectLatest {
-                Log.d("TAG", "startSearchJob: $it")
-                adapter.submitData(it)
-            }
-        }
-    }
-
-    @ExperimentalPagingApi
-    private fun startSearchJob(query: String) {
-        searchJob?.cancel()
-        searchJob = lifecycleScope.launch {
-            viewModel.getUsers(
-                query = query
-            ).collectLatest {
-                Log.d("TAG", "startSearchJob: $it")
-                adapter.submitData(it)
-                Log.d("TAG", "startSearchJob: $adapter.itemCount")
-
-            }
-        }
-    }
-
-    private fun setUpAdapter() {
-        binding.recyclerView.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            setHasFixedSize(true)
-            addItemDecoration(RecyclerViewItemDecoration())
-        }
-        binding.recyclerView.adapter = adapter.withLoadStateFooter(
-            footer = UserLoadingStateAdapter { retry() }
-        )
-
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         adapter.addLoadStateListener { loadState ->
             if (loadState.mediator?.refresh is LoadState.Loading) {
                 if (adapter.snapshot().isEmpty()) {
@@ -110,11 +58,69 @@ class UserListFragment : Fragment() {
                 }
                 error?.let {
                     if (adapter.snapshot().isEmpty()) {
-                        showLoading()
+                        val action =
+                            UserListFragmentDirections.actionUserListFragmentToNoInternetFragment2(
+                                isInternet = false
+                            )
+                        action.let { findNavController().navigate(it) }
                     }
                 }
             }
         }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentUserListBinding.inflate(layoutInflater)
+        return binding.root
+    }
+
+    @OptIn(ExperimentalPagingApi::class)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setUpAdapter()
+        initListener()
+        initToolbar()
+        if (binding.searchView.query.toString().isBlank()) {
+            startSearchJob()
+        } else {
+            startSearchJob(query = binding.searchView.query.toString().trim())
+        }
+    }
+
+    @ExperimentalPagingApi
+    private fun startSearchJob() {
+        searchJob?.cancel()
+        searchJob = lifecycleScope.launch {
+            viewModel.getUsers().collectLatest {
+                adapter.submitData(it)
+            }
+        }
+    }
+
+    @ExperimentalPagingApi
+    private fun startSearchJob(query: String) {
+        searchJob?.cancel()
+        searchJob = lifecycleScope.launch {
+            viewModel.getUsers(
+                query = query
+            ).collectLatest {
+                adapter.submitData(it)
+            }
+        }
+    }
+
+    private fun setUpAdapter() {
+        binding.recyclerView.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            setHasFixedSize(true)
+            addItemDecoration(RecyclerViewItemDecoration())
+        }
+        binding.recyclerView.adapter = adapter.withLoadStateFooter(
+            footer = UserLoadingStateAdapter { retry() }
+        )
     }
 
     private fun initToolbar() {
@@ -139,16 +145,20 @@ class UserListFragment : Fragment() {
         });
     }
 
-    private fun showNoInternetView() {
-        binding.recyclerView.isVisible = false
-        binding.layoutNoInternet.ivErrorIcon.isVisible = true
-        binding.layoutNoInternet.tvError.isVisible = true
-    }
+    @OptIn(ExperimentalPagingApi::class)
+    private fun internetObserver() {
+        val subscribe =
+            ReactiveNetwork.observeNetworkConnectivity(context).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribe { connectivity ->
+                    when {
+                        connectivity.available() -> {
 
-    private fun hideNoInternetView() {
-        binding.recyclerView.isVisible = true
-        binding.layoutNoInternet.ivErrorIcon.isVisible = false
-        binding.layoutNoInternet.tvError.isVisible = false
+                        }
+                        else -> {
+
+                        }
+                    }
+                }
     }
 
     private fun showLoading() {
